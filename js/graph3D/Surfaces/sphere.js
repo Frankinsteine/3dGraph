@@ -1,4 +1,4 @@
-Surfaces.prototype.sphere = (size = 7,  point = new Point(0, 0, 0), color = '#FF0000', count = 20) => {
+Surfaces.prototype.sphere = (size = 7,  point = new Point(0, 0, 0), color = '#FF0000', animation, count = 16) => {
     function circlexz(point, size, anglex = 0, count = 20) {
         for (let i = 0; i < count; i++) {
             p.push(new Point(
@@ -61,5 +61,7 @@ Surfaces.prototype.sphere = (size = 7,  point = new Point(0, 0, 0), color = '#FF
         }
     }
 
-    return new Subject(p, e, poly);
+    p.push(point);
+
+    return new Subject(p, e, poly, animation);
 }

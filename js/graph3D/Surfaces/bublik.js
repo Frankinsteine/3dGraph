@@ -1,4 +1,4 @@
-Surfaces.prototype.bublik = (size1 = 8, size2 = 9, size3 = 1, color = "#FFFF00", point = new Point(0, 0, 0), xy = 1 , count = 20, count2 = 15) => {
+Surfaces.prototype.bublik = (size1 = 8, size2 = 9, size3 = 1, point = new Point(0, 0, 0), color = "#FFFF00", xy = 1, animation, count = 20, count2 = 15) => {
     function circlexz(point, size, anglex = 0, count = 20) {
         for (let i = 0; i < count; i++) {
             p.push(new Point(
@@ -41,6 +41,13 @@ Surfaces.prototype.bublik = (size1 = 8, size2 = 9, size3 = 1, color = "#FFFF00",
             }
             break;
         }
+        case 2:{
+            circlexy(point, (size1 + size2)/2, 90, count);
+            for(let i = 0; i < count; i++){
+                circlexy(p[i], size3, 90, count2);
+            }
+            break;
+        }
         
     }
 
@@ -71,5 +78,5 @@ Surfaces.prototype.bublik = (size1 = 8, size2 = 9, size3 = 1, color = "#FFFF00",
         }
     }
 
-    return new Subject(p, e, poly);
+    return new Subject(p, e, poly, animation);
 }

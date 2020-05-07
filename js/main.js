@@ -15,8 +15,8 @@ window.onload = function () {
         BOTTOM: -5,
         WIDTH: 10,
         HEIGHT: 10,
-        CENTER: new Point(0, 0, -30),
-        CAMERA: new Point(0, 0, -50)
+        CENTER: new Point(0, 0, 0),
+        CAMERA: new Point(0, -20, -80)
     }
 
     let canPrint = {
@@ -29,21 +29,41 @@ window.onload = function () {
     const ZOOM_IN = 0.9;
 
     const sur = new Surfaces;
-    const canvas = new Canvas({ width: 500, height: 500, WINDOW, callbacks: { wheel, mouseup, mousedown, mouseleave, mousemove } });
+    const canvas = new Canvas({ width: 570, height: 570, WINDOW, callbacks: { wheel, mouseup, mousedown, mouseleave, mousemove } });
     const graph3D = new Graph3D({ WINDOW });
     const ui = new UI({ callbacks: { move, printPoints, printEdges, printPolygons } });
 
+    // сцена
     const SCENE =  [
-                    sur.bublik(9, 11, 1.5, "#FFFF00", new Point(0, 0, 0), xy = 1),
-                    sur.sphere(6, new Point(), "#FF00FF")
-                    ]; // сцена
-    const LIGHT = new Light(-10, 2, -10, 150);
+        sur.sphere(0.9, WINDOW.CENTER, '#FFE000'), // sun
+        sur.sphere(0.1, new Point(0, 0, -1.2), '#808080', {rotateOy: WINDOW.CENTER, speed: 4}),//mercury
+        sur.sphere(0.2, new Point(0, 0, -2), '#FF8000', {rotateOy: WINDOW.CENTER, speed: 1.5}),//venera
+        sur.sphere(0.2, new Point(0, 0, -3.5), '#4241FF', {rotateOy: WINDOW.CENTER, speed: 1}),//earth
+        sur.sphere(0.1, new Point(0, 0, -5.0), '#AA0000', {rotateOy: WINDOW.CENTER, speed: 0.52}),//mars
+        sur.sphere(0.5, new Point(0, 0, -7), '#FF9000', {rotateOy: WINDOW.CENTER, speed: 0.1}),//upiter
+        sur.sphere(0.35, new Point(0, 0, -9), '#FFA000', {rotateOy: WINDOW.CENTER, speed: 0.03}),//saturn
+        sur.bublik(0.5, 0.6, 0.1, new Point(0, 0, -9), '#909090', xy = 2, {rotateOy: WINDOW.CENTER, speed: 0.03}),
+        sur.sphere(0.24, new Point(0, 0, -11), '#4241FF', {rotateOy: WINDOW.CENTER, speed: 0.012}),//PREPARE URANUS
+        sur.sphere(0.24, new Point(0, 0, -13), '#000088', {rotateOy: WINDOW.CENTER, speed: 0.0088}),//neptun
+        //sur.bublik(3,4,1,new Point(), "#FF0000", xy = 2)
+    ]; 
+    SCENE.push(sur.sphere(0.05, new Point(0, -0.03, -3.8), '#808080', {rotateOy: WINDOW.CENTER, rotateOx: SCENE[3].points[SCENE[3].points.length - 1],speed: 1}));
+    const LIGHT = new Light(0, -10, 0, 150);
 
     let canRotate = false;
     // каллбэки //
     function wheel(event) {
         const delta = (event.wheelDelta > 0) ? ZOOM_OUT : ZOOM_IN;
-        SCENE.forEach(subject => subject.points.forEach(point => graph3D.zoom(delta, point)));
+        SCENE.forEach(subject => {
+            subject.points.forEach(point => graph3D.zoom(delta, point))
+            if(subject.animation){
+                for(let key in subject.animation){
+                    if (key === 'rotateOx' || key === 'rotateOy' || key === 'rotateOz'){
+                        graph3D.zoom(delta, subject.animation[key]);
+                    }
+                }
+            }
+        });
     }
 
     //checkbox
@@ -108,11 +128,29 @@ window.onload = function () {
         if (canRotate) {
             if (event.movementX) {
                 const alpha = canvas.sx(event.movementX) * 20 / WINDOW.CAMERA.z;
-                SCENE.forEach(subject => subject.points.forEach(point => graph3D.rotateOy(alpha, point)));
+                SCENE.forEach(subject => {
+                    subject.points.forEach(point => graph3D.rotateOy(alpha, point));
+                    if(subject.animation){
+                        for(let key in subject.animation){
+                            if (key === 'rotateOx' || key === 'rotateOy' || key === 'rotateOz'){
+                                graph3D.rotateOy(alpha, subject.animation[key]);
+                            }
+                        }
+                    }
+                });
             }
             if (event.movementY) {
                 const alpha = canvas.sy(event.movementY) * 20 / -WINDOW.CAMERA.z;
-                SCENE.forEach(subject => subject.points.forEach(point => graph3D.rotateOx(-alpha, point)));
+                SCENE.forEach(subject => {
+                    subject.points.forEach(point => graph3D.rotateOx(-alpha, point));
+                    if(subject.animation){
+                        for(let key in subject.animation){
+                            if (key === 'rotateOx' || key === 'rotateOy' || key === 'rotateOz'){
+                                graph3D.rotateOx(-alpha , subject.animation[key]);
+                            }
+                        }
+                    }
+                });
             }
         }
     }
@@ -153,10 +191,41 @@ window.onload = function () {
     function render() {
         clear();
         printAllPolygons();
-        SCENE.forEach(subject => printSubject(subject));
+        SCENE.forEach(subject => {
+            printSubject(subject);
+            //console.log(subject.points[400]);
+        });
         canvas.text(-4.5, -4, `FPS: ${FPSout}`);
     }
 
+    const interval = setInterval (() => {
+       
+    }, 1000);
+
+    function animation() {
+        SCENE.forEach(subject => {
+            if(subject.animation){
+                for(let key in subject.animation){
+                    //колдунство
+                    if (key === 'rotateOx' || key === 'rotateOy' || key === 'rotateOz'){
+                        const {x, y, z} = subject.animation[key];
+                        const xn = WINDOW.CENTER.x - x;
+                        const yn = WINDOW.CENTER.y - y;
+                        const zn = WINDOW.CENTER.z - z;
+                        subject.points.forEach(point => graph3D.move(xn, yn, zn, point));
+                        //вращение объекта
+                        const alpha = Math.PI/180 * subject.animation.speed * 3;
+                        subject.points.forEach(point => graph3D[key](-alpha, point));
+                        //обратное колднуство
+                        subject.points.forEach(point => graph3D.move(-xn, -yn, -zn, point));
+                    }
+                }
+            }
+        });
+    }
+
+    setInterval(animation, 30);
+    
     let FPS = 0;
     let FPSout = 0;
     let timestamp = (new Date()).getTime();
