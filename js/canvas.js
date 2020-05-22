@@ -57,7 +57,7 @@ class Canvas {
     }
 
     clear = function () {
-        this.context.fillStyle = '#e6ebef8a';
+        this.context.fillStyle = '#101010';
         this.context.fillRect(0, 0, this.canvas.width, this.canvas.height);
     }
     
