@@ -16,33 +16,36 @@ class Graph3D {
         return (point.y - y0) / (point.z - z0) * (zS - z0) + y0;
     }
 
-    zoom(delta, point) {
-        this.math.zoom(delta, point);
-    }
-    // перенос
-    moveOx(delta, point) {
-        this.math.move(delta, 0, 0, point);
+    zoomMatrix(delta) {
+        this.math.transformMatrix([this.math.zoomMatrix(delta)]);
     }
 
-    moveOy(delta, point) {
-        this.math.move(0, delta, 0, point);
+    moveMatrix(sx, sy, sz) {
+        this.math.transformMatrix([this.math.moveMatrix(sx, sy, sz)]);
     }
 
-    move(x, y, z, point) {
-        this.math.move(x, y, z, point);
+    rotateOxMatrix(alpha) {
+        this.math.transformMatrix([this.math.rotateOxMatrix(alpha)]);
     }
 
-    // повороты по осям
-    rotateOx(alpha, point) {
-        this.math.rotateOx(alpha, point);
+    rotateOyMatrix(alpha) {
+        this.math.transformMatrix([this.math.rotateOyMatrix(alpha)]);
     }
 
-    rotateOy(alpha, point) {
-        this.math.rotateOy(alpha, point);
+    rotateOzMatrix(alpha) {
+        this.math.transformMatrix([this.math.rotateOzMatrix(alpha)]);
     }
 
-    rotateOz(alpha, point) {
-        this.math.rotateOz(alpha, point);
+    transform(point){
+        this.math.transform(point);
+    }
+
+    animateMatrix(x1, y1, z1, key, alpha, x2, y2, z2) {
+        this.math.transformMatrix ([
+            this.math.moveMatrix(x1, y1, z1),
+            this.math[`${key}Matrix`](alpha),
+            this.math.moveMatrix(x2, y2, z2)
+        ]);
     }
 
     calcDistance(subject, endPoint, name) {
